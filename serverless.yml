@@ -66,5 +66,5 @@ functions:
           rate: cron(0 4 * * ? *) # 09:30 IST ~= 04:00 UTC (adjust for DST as needed)
           enabled: true
       - schedule:
-          rate: cron(5 9 * * ? *) # 14:35 IST ~= 09:05 UTC (adjust for DST as needed)
+          rate: cron(0 13 * * ? *) # 14:35 IST ~= 09:05 UTC (adjust for DST as needed)
           enabled: true

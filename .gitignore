@@ -1,3 +1,5 @@
 .env
 .gitignore
+package-lock.json
 .serverless
+node_modules
