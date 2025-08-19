@@ -1,0 +1,70 @@
+service: linkedin-x-autoposter
+frameworkVersion: "3"
+useDotenv: true
+provider:
+  name: aws
+  runtime: python3.9
+  region: ap-south-1
+  stage: ${env:STAGE, 'prod'}
+  memorySize: 1024
+  timeout: 120
+  logs:
+    http: false
+  environment:
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+    # LinkedIn
+    LINKEDIN_ACCESS_TOKEN: ${env:LINKEDIN_ACCESS_TOKEN}
+    LINKEDIN_CLIENTID: ${env:LINKEDIN_CLIENTID}
+    LINKEDIN_SECRETID: ${env:LINKEDIN_SECRETID}
+    # reddit
+    REDDIT_CLIENT_ID: ${env:REDDIT_CLIENT_ID}
+    REDDIT_CLIENT_SECRET: ${env:REDDIT_CLIENT_SECRET}
+    #discord
+    DISCORD_APPLICATION_ID: ${env:DISCORD_APPLICATION_ID}
+    DISCORD_PUBLIC_KEY: ${env:DISCORD_PUBLIC_KEY}
+    DISCORD_BOT_TOKEN: ${env:DISCORD_BOT_TOKEN}
+    # X / Twitter
+    X_BEARER_TOKEN: ${env:X_BEARER_TOKEN}
+    X_API_KEY: ${env:X_API_KEY}
+    X_API_SECRET: ${env:X_API_SECRET}
+    X_ACCESS_TOKEN: ${env:X_ACCESS_TOKEN}
+    X_ACCESS_TOKEN_SECRET: ${env:X_ACCESS_TOKEN_SECRET}
+    X_CLIENT_ID: ${env:X_CLIENT_ID}
+    X_CLIENT_SECRET: ${env:X_CLIENT_SECRET}
+    # MongoDB
+    MONGO_URI: ${env:MONGO_URI}
+    MONGO_DB: ${env:MONGO_DB, 'autoposter'}
+    MONGO_COLLECTION: ${env:MONGO_COLLECTION, 'posts'}
+
+plugins:
+  - serverless-python-requirements
+  - serverless-dotenv-plugin
+
+custom:
+  pythonRequirements:
+    dockerizePip: false
+    slim: true
+    strip: true
+  dotenv:
+    logging: false
+
+package:
+  patterns:
+    - "**"
+    - "!**/__pycache__/**"
+    - "!*.dist-info/**"
+    - "!*.pyc"
+    - "!posts.sqlite3"
+
+functions:
+  autoposter:
+    handler: lambda_handler.handler
+    description: Fetch latest tech news, generate copy with OpenAI, and post to LinkedIn and X
+    events:
+      # Schedules are in UTC; adjust as needed
+      - schedule:
+          rate: cron(0 4 * * ? *) # 09:30 IST ~= 04:00 UTC (adjust for DST as needed)
+          enabled: true
+      - schedule:
+          rate: cron(5 9 * * ? *) # 14:35 IST ~= 09:05 UTC (adjust for DST as needed)
+          enabled: true
