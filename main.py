@@ -7,9 +7,6 @@ from app.db_mongo import (
     initialize_database,
     has_been_posted,
     record_post,
-    fetch_pending_posts,
-    update_post_success,
-    update_post_error,
     exists_record,
 )
 from app.fetch_reddit import fetch_reddit_items
@@ -20,56 +17,10 @@ from app.post_x import post_x
 from app.utils import truncate_for_x
 
 
-def _process_pending_linkedin() -> None:
-    cfg = read_config()
-    if not cfg.linkedin_access_token:
-        return
-
-    pending = fetch_pending_posts(platform="linkedin", limit=25)
-    for row in pending:
-        url = (row.get("source_url") or "")
-        title = (row.get("title") or "")
-        text = (row.get("linkedin_text") or f"{title}\n\n{url}")
-        ok, err = post_linkedin(access_token=cfg.linkedin_access_token, text=text, url=url, title=title)
-        if ok:
-            update_post_success(platform="linkedin", source_url=url)
-        else:
-            update_post_error(platform="linkedin", source_url=url, error=err or "post failed")
-
-
-def _process_pending_x() -> None:
-    cfg = read_config()
-    has_oauth1 = bool(cfg.x_api_key and cfg.x_api_secret and cfg.x_access_token and cfg.x_access_token_secret)
-    has_oauth2 = bool(cfg.x_oauth2_access_token)
-    if not (has_oauth1 or has_oauth2):
-        return
-
-    pending = fetch_pending_posts(platform="x", limit=25)
-    for row in pending:
-        url = (row.get("source_url") or "")
-        title = (row.get("title") or "")
-        text = (row.get("x_text") or truncate_for_x(title, url))
-        ok, err = post_x(
-            text=text,
-            api_key=cfg.x_api_key,
-            api_secret=cfg.x_api_secret,
-            access_token=cfg.x_access_token,
-            access_token_secret=cfg.x_access_token_secret,
-            oauth2_access_token=cfg.x_oauth2_access_token,
-        )
-        if ok:
-            update_post_success(platform="x", source_url=url)
-        else:
-            update_post_error(platform="x", source_url=url, error=err or "post failed")
-
 
 def run_once(*, override_items: Optional[List[Dict]] = None) -> None:
     cfg = read_config()
     initialize_database()
-
-    # Process pending first
-    _process_pending_linkedin()
-    _process_pending_x()
 
     # Collect items from sources with rate-limit-aware fallback
     items: List[Dict] = []
@@ -108,7 +59,12 @@ def run_once(*, override_items: Optional[List[Dict]] = None) -> None:
         if cfg.linkedin_access_token:
             if not has_been_posted("linkedin", url):
                 text = gen.get("linkedin") or f"{title}\n\n{url}"
-                success, error = post_linkedin(access_token=cfg.linkedin_access_token, text=text, url=url, title=title)
+                success, error = post_linkedin(
+                    access_token=cfg.linkedin_access_token, 
+                    text=text, 
+                    url=url, 
+                    title=title
+                )
                 record_post(
                     platform="linkedin",
                     source=gen.get("source") or "",

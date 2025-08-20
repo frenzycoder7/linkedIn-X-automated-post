@@ -16,6 +16,7 @@ def post_linkedin(
     description: Optional[str] = None,
     visibility: str = "PUBLIC",
 ) -> Tuple[bool, Optional[str]]:
+    print(f"Posting on linkedIn")
     headers = {
         "Authorization": f"Bearer {access_token}",
         "X-Restli-Protocol-Version": "2.0.0",
@@ -24,6 +25,7 @@ def post_linkedin(
 
     # Resolve author_urn if not provided
     resolved_urn = author_urn
+
     if not resolved_urn:
         id_token = os.getenv("LINKEDIN_ID_TOKEN")
         resolved_urn, err = resolve_person_urn(access_token=access_token, id_token=id_token)
@@ -53,10 +55,13 @@ def post_linkedin(
         "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": visibility},
     }
 
+    print(body)
+
     try:
         resp = requests.post(LINKEDIN_UGC_ENDPOINT, headers=headers, json=body, timeout=20)
         if 200 <= resp.status_code < 300:
             return True, None
         return False, f"LinkedIn error: {resp.status_code} {resp.text[:500]}"
     except Exception as exc:
+        print(exc);
         return False, str(exc)

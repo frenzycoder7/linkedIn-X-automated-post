@@ -2,4 +2,6 @@
 .gitignore
 package-lock.json
 .serverless
+.vscode
 node_modules
+app/__pycache__

@@ -29,6 +29,7 @@ def initialize_database() -> None:
 def has_been_posted(platform: str, source_url: str) -> bool:
     col = get_mongo_collection()
     doc = col.find_one({"platform": platform, "source_url": source_url, "posted_at": {"$ne": None}}, {"_id": 1})
+    print(f"Already posted check: ",doc)
     return doc is not None
 
 
