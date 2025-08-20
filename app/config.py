@@ -32,6 +32,9 @@ class AppConfig:
     linkedin_access_token: Optional[str]
     linkedin_person_urn: Optional[str]
     linkedin_organization_urn: Optional[str]
+    gemini_api_key: Optional[str]
+    gemini_model: Optional[str]
+    openai_model: Optional[str]
 
     keywords: List[str]
 
@@ -173,4 +176,7 @@ def read_config() -> AppConfig:
         linkedin_person_urn=os.getenv("LINKEDIN_PERSON_URN"),
         linkedin_organization_urn=os.getenv("LINKEDIN_ORGANIZATION_URN"),
         keywords=keywords,
+        gemini_api_key=os.getenv('GEMINI_API_KEY'),
+        gemini_model=os.getenv('GEMINI_MODEL'),
+        openai_model=os.getenv('OPENAI_MODEL')
     )

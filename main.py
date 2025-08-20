@@ -11,7 +11,7 @@ from app.db_mongo import (
 )
 from app.fetch_reddit import fetch_reddit_items
 from app.fetch_x import fetch_x_items
-from app.generate import generate_posts
+from app.generate import  PostGenerator
 from app.post_linkedin import post_linkedin
 from app.post_x import post_x
 from app.utils import truncate_for_x
@@ -48,10 +48,23 @@ def run_once(*, override_items: Optional[List[Dict]] = None) -> None:
         return
 
     # Generate posts from all items; model will pick top one
-    generated = generate_posts(api_key=cfg.openai_api_key, items=items)
+    
+    if cfg.gemini_api_key:
+        provider = "gemini"
+        api_key = cfg.gemini_api_key
+        model = cfg.gemini_model
+    elif cfg.openai_api_key:
+        provider = "openai"
+        api_key = cfg.openai_api_key
+        model = cfg.openai_model
+    else:
+        raise ValueError("No API key found for Gemini or OpenAI")
+
+    generator = PostGenerator(api_key=api_key, provider=provider, model=model)
+    posts = generator.generate(items=items)
 
     # Post and log
-    for gen in generated:
+    for gen in posts:
         url = gen.get("url") or ""
         title = gen.get("title") or ""
 

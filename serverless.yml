@@ -12,6 +12,9 @@ provider:
     http: false
   environment:
     OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+    OPENAI_MODEL: ${env:OPENAI_MODEL}
+    GEMINI_API_KEY: ${env:GEMINI_API_KEY}
+    GEMINI_MODEL: ${env:GEMINI_MODEL}
     # LinkedIn
     LINKEDIN_ACCESS_TOKEN: ${env:LINKEDIN_ACCESS_TOKEN}
     LINKEDIN_CLIENTID: ${env:LINKEDIN_CLIENTID}
